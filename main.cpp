@@ -338,3 +338,183 @@ int lengthOfCharacteristicString(char numString[])
 
 	return numCharacters;
 }
+
+//get the number of digits in number
+int numDigits(int number)
+{
+    int digits = 0;
+    
+    if (number < 0) digits = 1;
+    
+    while (number)
+    {
+        number /= 10;
+        digits++;
+    }
+    return digits;
+}
+
+//whole number division
+int wholeNumberDivision(int top, char result[], int length, bool &isNegative)
+{
+    //getting the number of digits of the int
+    int positionToAddNumbers = numDigits(top);
+    
+    //positionToAddNumbers changes so i made a copy of the original value
+    int placeHolder = positionToAddNumbers;
+    
+    //add top to result array
+    //if top is a single digit
+    if (top < 10)
+    {
+        //if its negative add the - sign
+        if (isNegative)
+        {
+            top*=-1;
+            result[positionToAddNumbers-1] = (char)top;
+            top*=-1;
+            
+            //turn off is negative
+            isNegative = false;
+        }
+        
+        else
+        {
+            //add value to result
+            result[positionToAddNumbers-1] = (char)top;
+        }
+    }
+    
+    int onesPlace;
+    
+    //if top is more then one digit
+    while (top >= 10)
+    {
+        //getting one's place from digit
+        onesPlace = top % 10;
+        
+        //adding to result
+        result[positionToAddNumbers-1] = (char)onesPlace;
+        
+        positionToAddNumbers--;
+        
+        //removing ones place
+        top/= 10;
+        
+        if (top <= 9)
+        {
+            //adding last digit
+            //if its negative add the - sign
+            if (isNegative)
+            {
+                top*=-1;
+                result[positionToAddNumbers-1] = (char)top;
+                top*=-1;
+                
+                //turn off is negative
+                isNegative = false;
+            }
+            
+            //add digit as normal
+            else
+            {
+                result[positionToAddNumbers-1] = (char)top;
+            }
+        }
+    }
+    
+    //returning number of digits
+    return placeHolder;
+}
+
+void longDivisionHelper(int n, int d, char result[], int length, bool &isNegative)
+{
+    int top = n / d;
+    int bottom = n % d;
+    
+    //position to start adding more digits
+    int positionToStartAt = wholeNumberDivision(top, result, length, isNegative);
+    
+    //adding the . at the postion we ended at earlier
+    result[positionToStartAt] = '.';
+    
+    //loop to do long division
+    for (int i = positionToStartAt + 1; i < length; i++)
+    {
+        //"bringing down" the zero
+        bottom *= 10;
+        
+        //answer from long division
+        top = bottom / d;
+        
+        //for adding the - sign
+        if (isNegative)
+        {
+            result[i] = (char)top;
+            isNegative = false;
+        }
+        
+        //if the other numbers are negative we dont want lots of - signs
+        else
+        {
+            result[i] = (char)top;
+        }
+        
+        //subtracting top value * d from bottom
+        bottom -=top * d;
+    }
+}
+
+bool divide(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len)
+{
+    //boolean for if the user placed negative numbers
+    bool isNegative = false;
+    
+    //check if dividing by zero
+    if (d1 == 0 || d2 == 0)
+    {
+        return false;
+    }
+    
+    //making numbers improper
+    if (c1 != 0)
+    {
+        n1 = n1 + (d1 * c1);
+    }
+    
+    if (c2 != 0)
+    {
+        n2 = n2 + (d2 * c2);
+    }
+    
+    //removing d2
+    n1 *= d2;
+    
+    //removing n2
+    d1 *= n2;
+    
+    //checking for negatives
+    //if n1 is negative
+    if (n1 < 0 && d1 > 0)
+    {
+        n1*=-1;
+        isNegative = true;
+    }
+    //if d1 is negative
+    else if (n1 > 0 && d1 < 0)
+    {
+        d1*=-1;
+        isNegative = true;
+    }
+    
+    //if both are negative then remove negatives
+    else if (n1 < 0 && d1 < 0)
+    {
+        n1*=-1;
+        d1*=-1;
+    }
+    
+    longDivisionHelper(n1, d1, result, len, isNegative);
+    
+    return true;
+}
